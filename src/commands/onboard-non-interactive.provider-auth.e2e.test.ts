@@ -1,120 +1,12 @@
-import fs from "node:fs/promises";
-import os from "node:os";
-import path from "node:path";
-import { setTimeout as delay } from "node:timers/promises";
 import { describe, expect, it } from "vitest";
-import { captureEnv } from "../test-utils/env.js";
 import { MINIMAX_API_BASE_URL, MINIMAX_CN_API_BASE_URL } from "./onboard-auth.js";
 import { OPENAI_DEFAULT_MODEL } from "./openai-model-default.js";
-
-type RuntimeMock = {
-  log: () => void;
-  error: (msg: string) => never;
-  exit: (code: number) => never;
-};
-
-type OnboardEnv = {
-  configPath: string;
-  runtime: RuntimeMock;
-};
-
-async function removeDirWithRetry(dir: string): Promise<void> {
-  for (let attempt = 0; attempt < 5; attempt += 1) {
-    try {
-      await fs.rm(dir, { recursive: true, force: true });
-      return;
-    } catch (error) {
-      const code = (error as NodeJS.ErrnoException).code;
-      const isTransient = code === "ENOTEMPTY" || code === "EBUSY" || code === "EPERM";
-      if (!isTransient || attempt === 4) {
-        throw error;
-      }
-      await delay(25 * (attempt + 1));
-    }
-  }
-}
-
-async function withOnboardEnv(
-  prefix: string,
-  run: (ctx: OnboardEnv) => Promise<void>,
-): Promise<void> {
-  const prev = captureEnv([
-    "HOME",
-    "OPENCLAW_STATE_DIR",
-    "OPENCLAW_CONFIG_PATH",
-    "OPENCLAW_SKIP_CHANNELS",
-    "OPENCLAW_SKIP_GMAIL_WATCHER",
-    "OPENCLAW_SKIP_CRON",
-    "OPENCLAW_SKIP_CANVAS_HOST",
-    "OPENCLAW_GATEWAY_TOKEN",
-    "OPENCLAW_GATEWAY_PASSWORD",
-    "CUSTOM_API_KEY",
-    "OPENCLAW_DISABLE_CONFIG_CACHE",
-  ]);
-
-  process.env.OPENCLAW_SKIP_CHANNELS = "1";
-  process.env.OPENCLAW_SKIP_GMAIL_WATCHER = "1";
-  process.env.OPENCLAW_SKIP_CRON = "1";
-  process.env.OPENCLAW_SKIP_CANVAS_HOST = "1";
-  process.env.OPENCLAW_DISABLE_CONFIG_CACHE = "1";
-  delete process.env.OPENCLAW_GATEWAY_TOKEN;
-  delete process.env.OPENCLAW_GATEWAY_PASSWORD;
-  delete process.env.CUSTOM_API_KEY;
-
-  const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), prefix));
-  const configPath = path.join(tempHome, "openclaw.json");
-  process.env.HOME = tempHome;
-  process.env.OPENCLAW_STATE_DIR = tempHome;
-  process.env.OPENCLAW_CONFIG_PATH = configPath;
-
-  const runtime: RuntimeMock = {
-    log: () => {},
-    error: (msg: string) => {
-      throw new Error(msg);
-    },
-    exit: (code: number) => {
-      throw new Error(`exit:${code}`);
-    },
-  };
-
-  try {
-    await run({ configPath, runtime });
-  } finally {
-    await removeDirWithRetry(tempHome);
-    prev.restore();
-  }
-}
-
-async function runNonInteractive(
-  options: Record<string, unknown>,
-  runtime: RuntimeMock,
-): Promise<void> {
-  const { runNonInteractiveOnboarding } = await import("./onboard-non-interactive.js");
-  await runNonInteractiveOnboarding(options, runtime);
-}
-
-async function readJsonFile<T>(filePath: string): Promise<T> {
-  return JSON.parse(await fs.readFile(filePath, "utf8")) as T;
-}
-
-async function expectApiKeyProfile(params: {
-  profileId: string;
-  provider: string;
-  key: string;
-  metadata?: Record<string, string>;
-}): Promise<void> {
-  const { ensureAuthProfileStore } = await import("../agents/auth-profiles.js");
-  const store = ensureAuthProfileStore();
-  const profile = store.profiles[params.profileId];
-  expect(profile?.type).toBe("api_key");
-  if (profile?.type === "api_key") {
-    expect(profile.provider).toBe(params.provider);
-    expect(profile.key).toBe(params.key);
-    if (params.metadata) {
-      expect(profile.metadata).toEqual(params.metadata);
-    }
-  }
-}
+import {
+  withOnboardEnv,
+  runNonInteractive,
+  readJsonFile,
+  expectApiKeyProfile,
+} from "../../test/helpers/onboard-test-utils.js";
 
 describe("onboard (non-interactive): provider auth", () => {
   it("stores MiniMax API key and uses global baseUrl by default", async () => {
@@ -262,39 +154,6 @@ describe("onboard (non-interactive): provider auth", () => {
       expect(cfg.auth?.profiles?.["xai:default"]?.mode).toBe("api_key");
       expect(cfg.agents?.defaults?.model?.primary).toBe("xai/grok-4");
       await expectApiKeyProfile({ profileId: "xai:default", provider: "xai", key: "xai-test-key" });
-    });
-  }, 60_000);
-
-  it("stores Vercel AI Gateway API key and sets default model", async () => {
-    await withOnboardEnv("openclaw-onboard-ai-gateway-", async ({ configPath, runtime }) => {
-      await runNonInteractive(
-        {
-          nonInteractive: true,
-          authChoice: "ai-gateway-api-key",
-          aiGatewayApiKey: "gateway-test-key",
-          skipHealth: true,
-          skipChannels: true,
-          skipSkills: true,
-          json: true,
-        },
-        runtime,
-      );
-
-      const cfg = await readJsonFile<{
-        auth?: { profiles?: Record<string, { provider?: string; mode?: string }> };
-        agents?: { defaults?: { model?: { primary?: string } } };
-      }>(configPath);
-
-      expect(cfg.auth?.profiles?.["vercel-ai-gateway:default"]?.provider).toBe("vercel-ai-gateway");
-      expect(cfg.auth?.profiles?.["vercel-ai-gateway:default"]?.mode).toBe("api_key");
-      expect(cfg.agents?.defaults?.model?.primary).toBe(
-        "vercel-ai-gateway/anthropic/claude-opus-4.6",
-      );
-      await expectApiKeyProfile({
-        profileId: "vercel-ai-gateway:default",
-        provider: "vercel-ai-gateway",
-        key: "gateway-test-key",
-      });
     });
   }, 60_000);
 

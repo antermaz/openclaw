@@ -25,7 +25,6 @@ import {
   applyVeniceConfig,
   applyTogetherConfig,
   applyHuggingfaceConfig,
-  applyVercelAiGatewayConfig,
   applyLitellmConfig,
   applyXaiConfig,
   applyXiaomiConfig,
@@ -45,7 +44,6 @@ import {
   setVeniceApiKey,
   setTogetherApiKey,
   setHuggingfaceApiKey,
-  setVercelAiGatewayApiKey,
   setXiaomiApiKey,
   setZaiApiKey,
 } from "../../onboard-auth.js";
@@ -57,6 +55,11 @@ import {
 } from "../../onboard-custom.js";
 import { applyOpenAIConfig } from "../../openai-model-default.js";
 import { detectZaiEndpoint } from "../../zai-endpoint-detect.js";
+import {
+  applyVercelAiGatewayConfig,
+  setVercelAiGatewayApiKey,
+  VERCEL_AI_GATEWAY_PROVIDER_ID,
+} from "../../../providers/vercel-ai-gateway/index.js";
 import { resolveNonInteractiveApiKey } from "../api-keys.js";
 
 export async function applyNonInteractiveAuthChoice(params: {
@@ -394,7 +397,7 @@ export async function applyNonInteractiveAuthChoice(params: {
 
   if (authChoice === "ai-gateway-api-key") {
     const resolved = await resolveNonInteractiveApiKey({
-      provider: "vercel-ai-gateway",
+      provider: VERCEL_AI_GATEWAY_PROVIDER_ID,
       cfg: baseConfig,
       flagValue: opts.aiGatewayApiKey,
       flagName: "--ai-gateway-api-key",
@@ -408,8 +411,8 @@ export async function applyNonInteractiveAuthChoice(params: {
       await setVercelAiGatewayApiKey(resolved.key);
     }
     nextConfig = applyAuthProfileConfig(nextConfig, {
-      profileId: "vercel-ai-gateway:default",
-      provider: "vercel-ai-gateway",
+      profileId: `${VERCEL_AI_GATEWAY_PROVIDER_ID}:default`,
+      provider: VERCEL_AI_GATEWAY_PROVIDER_ID,
       mode: "api_key",
     });
     return applyVercelAiGatewayConfig(nextConfig);

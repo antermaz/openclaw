@@ -12,24 +12,7 @@ import {
   VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF,
 } from "./onboard-auth.credentials.js";
 
-export function applyVercelAiGatewayProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
-  const models = { ...cfg.agents?.defaults?.models };
-  models[VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF] = {
-    ...models[VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF],
-    alias: models[VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF]?.alias ?? "Vercel AI Gateway",
-  };
-
-  return {
-    ...cfg,
-    agents: {
-      ...cfg.agents,
-      defaults: {
-        ...cfg.agents?.defaults,
-        models,
-      },
-    },
-  };
-}
+export { applyVercelAiGatewayProviderConfig } from "../providers/vercel-ai-gateway/index.js";
 
 export function applyCloudflareAiGatewayProviderConfig(
   cfg: OpenClawConfig,
@@ -77,10 +60,7 @@ export function applyCloudflareAiGatewayProviderConfig(
   });
 }
 
-export function applyVercelAiGatewayConfig(cfg: OpenClawConfig): OpenClawConfig {
-  const next = applyVercelAiGatewayProviderConfig(cfg);
-  return applyAgentDefaultModelPrimary(next, VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF);
-}
+export { applyVercelAiGatewayConfig } from "../providers/vercel-ai-gateway/index.js";
 
 export function applyCloudflareAiGatewayConfig(
   cfg: OpenClawConfig,

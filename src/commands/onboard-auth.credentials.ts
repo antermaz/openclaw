@@ -126,7 +126,7 @@ export const OPENROUTER_DEFAULT_MODEL_REF = "openrouter/auto";
 export const HUGGINGFACE_DEFAULT_MODEL_REF = "huggingface/deepseek-ai/DeepSeek-R1";
 export const TOGETHER_DEFAULT_MODEL_REF = "together/moonshotai/Kimi-K2.5";
 export const LITELLM_DEFAULT_MODEL_REF = "litellm/claude-opus-4-6";
-export const VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF = "vercel-ai-gateway/anthropic/claude-opus-4.6";
+export { VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF } from "../providers/vercel-ai-gateway/index.js";
 
 export async function setZaiApiKey(key: string, agentDir?: string) {
   // Write to resolved agent dir so gateway finds credentials on startup.
@@ -203,17 +203,7 @@ export async function setLitellmApiKey(key: string, agentDir?: string) {
   });
 }
 
-export async function setVercelAiGatewayApiKey(key: string, agentDir?: string) {
-  upsertAuthProfile({
-    profileId: "vercel-ai-gateway:default",
-    credential: {
-      type: "api_key",
-      provider: "vercel-ai-gateway",
-      key,
-    },
-    agentDir: resolveAuthAgentDir(agentDir),
-  });
-}
+export { setVercelAiGatewayApiKey } from "../providers/vercel-ai-gateway/index.js";
 
 export async function setOpencodeZenApiKey(key: string, agentDir?: string) {
   upsertAuthProfile({

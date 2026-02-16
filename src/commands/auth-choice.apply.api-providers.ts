@@ -35,8 +35,6 @@ import {
   applyTogetherProviderConfig,
   applyVeniceConfig,
   applyVeniceProviderConfig,
-  applyVercelAiGatewayConfig,
-  applyVercelAiGatewayProviderConfig,
   applyXiaomiConfig,
   applyXiaomiProviderConfig,
   applyZaiConfig,
@@ -49,7 +47,6 @@ import {
   SYNTHETIC_DEFAULT_MODEL_REF,
   TOGETHER_DEFAULT_MODEL_REF,
   VENICE_DEFAULT_MODEL_REF,
-  VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF,
   XIAOMI_DEFAULT_MODEL_REF,
   setCloudflareAiGatewayConfig,
   setQianfanApiKey,
@@ -61,13 +58,19 @@ import {
   setSyntheticApiKey,
   setTogetherApiKey,
   setVeniceApiKey,
-  setVercelAiGatewayApiKey,
   setXiaomiApiKey,
   setZaiApiKey,
   ZAI_DEFAULT_MODEL_REF,
 } from "./onboard-auth.js";
 import { OPENCODE_ZEN_DEFAULT_MODEL } from "./opencode-zen-model-default.js";
 import { detectZaiEndpoint } from "./zai-endpoint-detect.js";
+import {
+  applyVercelAiGatewayConfig,
+  applyVercelAiGatewayProviderConfig,
+  setVercelAiGatewayApiKey,
+  VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF,
+  VERCEL_AI_GATEWAY_PROVIDER_ID,
+} from "../providers/vercel-ai-gateway/index.js";
 
 export async function applyAuthChoiceApiProviders(
   params: ApplyAuthChoiceParams,
@@ -95,7 +98,7 @@ export async function applyAuthChoiceApiProviders(
       authChoice = "openrouter-api-key";
     } else if (params.opts.tokenProvider === "litellm") {
       authChoice = "litellm-api-key";
-    } else if (params.opts.tokenProvider === "vercel-ai-gateway") {
+    } else if (params.opts.tokenProvider === VERCEL_AI_GATEWAY_PROVIDER_ID) {
       authChoice = "ai-gateway-api-key";
     } else if (params.opts.tokenProvider === "cloudflare-ai-gateway") {
       authChoice = "cloudflare-ai-gateway-api-key";
@@ -229,13 +232,13 @@ export async function applyAuthChoiceApiProviders(
     if (
       !hasCredential &&
       params.opts?.token &&
-      params.opts?.tokenProvider === "vercel-ai-gateway"
+      params.opts?.tokenProvider === VERCEL_AI_GATEWAY_PROVIDER_ID
     ) {
       await setVercelAiGatewayApiKey(normalizeApiKeyInput(params.opts.token), params.agentDir);
       hasCredential = true;
     }
 
-    const envKey = resolveEnvApiKey("vercel-ai-gateway");
+    const envKey = resolveEnvApiKey(VERCEL_AI_GATEWAY_PROVIDER_ID);
     if (envKey) {
       const useExisting = await params.prompter.confirm({
         message: `Use existing AI_GATEWAY_API_KEY (${envKey.source}, ${formatApiKeyPreview(envKey.apiKey)})?`,
@@ -254,8 +257,8 @@ export async function applyAuthChoiceApiProviders(
       await setVercelAiGatewayApiKey(normalizeApiKeyInput(String(key ?? "")), params.agentDir);
     }
     nextConfig = applyAuthProfileConfig(nextConfig, {
-      profileId: "vercel-ai-gateway:default",
-      provider: "vercel-ai-gateway",
+      profileId: `${VERCEL_AI_GATEWAY_PROVIDER_ID}:default`,
+      provider: VERCEL_AI_GATEWAY_PROVIDER_ID,
       mode: "api_key",
     });
     {
