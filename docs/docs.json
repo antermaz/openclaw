@@ -1250,7 +1250,8 @@
                   "concepts/usage-tracking",
                   "concepts/timezone",
                   "web-using-internals",
-                  "extension-relay-internals"
+                  "extension-relay-internals",
+                  "extension-relay-philosophy"
                 ]
               },
               {
@@ -1776,7 +1777,8 @@
                   "zh-CN/concepts/usage-tracking",
                   "zh-CN/concepts/timezone",
                   "web-using-internals",
-                  "extension-relay-internals"
+                  "extension-relay-internals",
+                  "extension-relay-philosophy"
                 ]
               },
               {
