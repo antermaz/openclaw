@@ -27,8 +27,6 @@ export {
   applyTogetherProviderConfig,
   applyVeniceConfig,
   applyVeniceProviderConfig,
-  applyVercelAiGatewayConfig,
-  applyVercelAiGatewayProviderConfig,
   applyXaiConfig,
   applyXaiProviderConfig,
   applyXiaomiConfig,
@@ -36,6 +34,12 @@ export {
   applyZaiConfig,
   applyZaiProviderConfig,
 } from "./onboard-auth.config-core.js";
+export {
+  applyVercelAiGatewayConfig,
+  applyVercelAiGatewayProviderConfig,
+  setVercelAiGatewayApiKey,
+  VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF,
+} from "../providers/vercel-ai-gateway/index.js";
 export {
   applyMinimaxApiConfig,
   applyMinimaxApiConfigCn,
@@ -69,13 +73,11 @@ export {
   setTogetherApiKey,
   setHuggingfaceApiKey,
   setVeniceApiKey,
-  setVercelAiGatewayApiKey,
   setXiaomiApiKey,
   setZaiApiKey,
   setXaiApiKey,
   writeOAuthCredentials,
   HUGGINGFACE_DEFAULT_MODEL_REF,
-  VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF,
   XIAOMI_DEFAULT_MODEL_REF,
   ZAI_DEFAULT_MODEL_REF,
   TOGETHER_DEFAULT_MODEL_REF,
