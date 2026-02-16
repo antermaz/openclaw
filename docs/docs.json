@@ -1248,7 +1248,8 @@
                   "concepts/markdown-formatting",
                   "concepts/typing-indicators",
                   "concepts/usage-tracking",
-                  "concepts/timezone"
+                  "concepts/timezone",
+                  "web-using-internals"
                 ]
               },
               {
@@ -1772,7 +1773,8 @@
                   "zh-CN/concepts/markdown-formatting",
                   "zh-CN/concepts/typing-indicators",
                   "zh-CN/concepts/usage-tracking",
-                  "zh-CN/concepts/timezone"
+                  "zh-CN/concepts/timezone",
+                  "web-using-internals"
                 ]
               },
               {
